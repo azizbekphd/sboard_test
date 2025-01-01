@@ -1,0 +1,20 @@
+{
+  "name": "sboard_test",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "host": "vite --host"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.2",
+    "vite": "^4.4.5"
+  },
+  "dependencies": {
+    "canvaskit-wasm": "^0.39.1",
+    "pixi.js-legacy": "^7.4.2"
+  }
+}
