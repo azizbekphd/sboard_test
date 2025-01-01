@@ -23,17 +23,18 @@ export default class PixiSkiaAdapter {
     }
 
     public renderContainer(object: PIXI.DisplayObject): void {
-        const transform = {
-            translate: new PIXI.Point(object.position.x, object.position.y),
-            rotation: object.rotation * 180 / Math.PI,
+        const transform: TransformOptions = {
+            translate: object.position,
+            rotation: object.angle,
             scale: object.scale,
-            pivot: new PIXI.Point(object.pivot.x, object.pivot.y),
+            pivot: object.pivot,
         };
+
         this.canvas.save();
         if (transform) {
-            this.canvas.translate(-transform.pivot.x, -transform.pivot.y);
-            this.canvas.rotate(transform.rotation, 0, 0);
             this.canvas.translate(transform.translate.x, transform.translate.y);
+            this.canvas.translate(-transform.pivot.x, -transform.pivot.y);
+            this.canvas.rotate(transform.rotation, transform.pivot.x, transform.pivot.y);
             this.canvas.scale(transform.scale.x, transform.scale.y);
         }
         if (object instanceof PIXI.Sprite) {
@@ -50,7 +51,47 @@ export default class PixiSkiaAdapter {
     }
 
     public renderSprite(sprite: PIXI.Sprite): void {
-        // TODO: Implement
+        if (!sprite.texture.valid) {
+            return;
+        }
+
+        const baseTexture = sprite.texture.baseTexture;
+        const source = baseTexture.resource?.source as HTMLImageElement | HTMLCanvasElement;
+
+        if (!source) {
+            console.warn('Sprite source is not available for rendering.');
+            return;
+        }
+
+        const skImage = this.canvasKit.MakeImageFromCanvasImageSource(source);
+        if (!skImage) {
+            console.warn('Failed to create Skia Image from sprite source.');
+            return;
+        }
+
+        const frame = sprite.texture.frame;
+        const srcRect = this.canvasKit.XYWHRect(
+            frame.x,
+            frame.y,
+            frame.width,
+            frame.height
+        );
+
+        const destRect = this.canvasKit.XYWHRect(
+            -sprite.anchor.x * frame.width,
+            -sprite.anchor.y * frame.height,
+            frame.width,
+            frame.height
+        );
+
+        this.canvas.drawImageRect(
+            skImage,
+            srcRect,
+            destRect,
+            this.paint
+        );
+
+        skImage.delete();
     }
 
     public renderGraphics(graphics: PIXI.Graphics): void {

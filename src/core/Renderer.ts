@@ -1,6 +1,6 @@
 import CanvasKitInit, { Canvas, CanvasKit, Surface } from 'canvaskit-wasm';
 import * as PIXI from 'pixi.js-legacy';
-import PixiSkiaAdapter from '../adapters/PixiSkiaAdapter';
+import PixiSkiaAdapter from '../features/PixiSkiaAdapter';
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from '../constants';
 
 
@@ -20,12 +20,14 @@ abstract class Renderer<T> {
 
 export class PixiRenderer extends Renderer<PIXI.Application> {
     public async init(): Promise<PIXI.Application> {
+        const pixelRatio = window.devicePixelRatio || 1
         const app = new PIXI.Application({
-            resizeTo: this.parentElement,
+            width: CANVAS_WIDTH,
+            height: CANVAS_HEIGHT,
             eventMode: 'dynamic',
             forceCanvas: true,
             backgroundColor: 0xFFFFFF,
-            resolution: 1,
+            resolution: pixelRatio,
         });
         this.parentElement.appendChild(app.view);
         this.app = app;
@@ -72,6 +74,7 @@ export class SkiaRenderer extends Renderer<CanvasKit> {
     }
 
     public renderContainer(container: PIXI.Container): void {
+        this.clear();
         this.pixiAdapter.renderContainer(container);
     }
 

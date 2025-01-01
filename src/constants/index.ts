@@ -1,5 +1,5 @@
-export const CANVAS_WIDTH = 400;
-export const CANVAS_HEIGHT = 300;
+export const CANVAS_WIDTH = 800;
+export const CANVAS_HEIGHT = 600;
 export const DEFAULT_LINE_WIDTH = 2;
 export const DEFAULT_FILL_COLOR = 0xFFFFFF;
 export const DEFAULT_LINE_COLOR = 0x000000;

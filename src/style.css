@@ -91,8 +91,6 @@ button:active {
 }
 
 .canvas {
-    width: 400px;
-    height: 300px;
     background-color: #ffffff;
     border: 1px solid #000000;
 }

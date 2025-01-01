@@ -24,7 +24,9 @@ export class Application {
 
     public renderContainer(container: PIXI.Container): void {
         this.pixiRenderer.renderContainer(container);
-        this.skiaRenderer.renderContainer(container);
+        setTimeout(() => {
+            this.skiaRenderer.renderContainer(container);
+        }, 0);
     }
 
     public clear(): void {
