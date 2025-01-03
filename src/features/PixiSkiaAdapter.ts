@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js-legacy';
-import { Canvas, CanvasKit, Color, Paint, Surface } from 'canvaskit-wasm';
+import { Canvas, CanvasKit, Color, Paint } from '../third-party/canvaskit/canvaskit.js';
 
 
 interface TransformOptions {
@@ -10,19 +10,15 @@ interface TransformOptions {
 }
 
 export default class PixiSkiaAdapter {
-    private canvas: Canvas;
     private canvasKit: CanvasKit;
-    private surface: Surface;
     private paint: Paint;
 
-    constructor(canvas: Canvas, canvasKit: CanvasKit, surface: Surface) {
-        this.canvas = canvas;
+    constructor(canvasKit: CanvasKit) {
         this.canvasKit = canvasKit;
-        this.surface = surface;
         this.paint = new this.canvasKit.Paint();
     }
 
-    public renderContainer(object: PIXI.DisplayObject): void {
+    public renderContainer(canvas: Canvas, object: PIXI.DisplayObject): void {
         const transform: TransformOptions = {
             translate: object.position,
             rotation: object.angle,
@@ -30,27 +26,26 @@ export default class PixiSkiaAdapter {
             pivot: object.pivot,
         };
 
-        this.canvas.save();
-        if (transform) {
-            this.canvas.translate(transform.translate.x, transform.translate.y);
-            this.canvas.translate(-transform.pivot.x, -transform.pivot.y);
-            this.canvas.rotate(transform.rotation, transform.pivot.x, transform.pivot.y);
-            this.canvas.scale(transform.scale.x, transform.scale.y);
-        }
+        canvas.save();
+
+        canvas.translate(transform.translate.x, transform.translate.y);
+        canvas.translate(-transform.pivot.x, -transform.pivot.y);
+        canvas.rotate(transform.rotation, transform.pivot.x, transform.pivot.y);
+        canvas.scale(transform.scale.x, transform.scale.y);
+
         if (object instanceof PIXI.Sprite) {
-            this.renderSprite(object);
+            this.renderSprite(canvas, object);
         } else if (object instanceof PIXI.Graphics) {
-            this.renderGraphics(object);
+            this.renderGraphics(canvas, object);
         } else if (object instanceof PIXI.Container) {
             for (const child of object.children ?? []) {
-                this.renderContainer(child);
+                this.renderContainer(canvas, child);
             }
         }
-        this.canvas.restore();
-        this.surface.flush();
+        canvas.restore();
     }
 
-    public renderSprite(sprite: PIXI.Sprite): void {
+    public renderSprite(canvas: Canvas, sprite: PIXI.Sprite): void {
         if (!sprite.texture.valid) {
             return;
         }
@@ -84,7 +79,7 @@ export default class PixiSkiaAdapter {
             frame.height
         );
 
-        this.canvas.drawImageRect(
+        canvas.drawImageRect(
             skImage,
             srcRect,
             destRect,
@@ -94,30 +89,30 @@ export default class PixiSkiaAdapter {
         skImage.delete();
     }
 
-    public renderGraphics(graphics: PIXI.Graphics): void {
+    public renderGraphics(canvas: Canvas, graphics: PIXI.Graphics): void {
         const commands = graphics.geometry.graphicsData;
         for (const command of commands) {
             const { fillStyle, lineStyle } = command
 
             this.paint.setColor(this.convertColor(fillStyle.alpha, fillStyle?.color ?? 0x000000));
             this.paint.setStyle(this.canvasKit.PaintStyle.Fill);
-            this._renderShape(command);
+            this._renderShape(canvas, command);
 
             if (lineStyle.width > 0) {
                 this.paint.setColor(this.convertColor(lineStyle.alpha, lineStyle.color));
                 this.paint.setStyle(this.canvasKit.PaintStyle.Stroke);
                 this.paint.setStrokeWidth(lineStyle.width);
-                this._renderShape(command);
+                this._renderShape(canvas, command);
             }
         }
     }
 
-    private _renderShape(command: PIXI.GraphicsData): void {
+    private _renderShape(canvas: Canvas, command: PIXI.GraphicsData): void {
         const shape = command.shape;
         if (shape instanceof PIXI.Circle) {
-            this.canvas.drawCircle(shape.x, shape.y, shape.radius, this.paint);
+            canvas.drawCircle(shape.x, shape.y, shape.radius, this.paint);
         } else if (shape instanceof PIXI.Ellipse) {
-            this.canvas.drawOval(this.canvasKit.XYWHRect(
+            canvas.drawOval(this.canvasKit.XYWHRect(
                 shape.x - shape.width,
                 shape.y - shape.height,
                 shape.width * 2, shape.height * 2
@@ -125,11 +120,11 @@ export default class PixiSkiaAdapter {
         } else if (shape instanceof PIXI.Polygon) {
             const path = new this.canvasKit.Path();
             path.addPoly(shape.points, shape.closeStroke);
-            this.canvas.drawPath(path, this.paint);
+            canvas.drawPath(path, this.paint);
         } else if (shape instanceof PIXI.Rectangle) {
-            this.canvas.drawRect(this.canvasKit.XYWHRect(shape.x, shape.y, shape.width, shape.height), this.paint);
+            canvas.drawRect(this.canvasKit.XYWHRect(shape.x, shape.y, shape.width, shape.height), this.paint);
         } else if (shape instanceof PIXI.RoundedRectangle) {
-            this.canvas.drawRRect(this.canvasKit.RRectXY(this.canvasKit.LTRBRect(shape.x, shape.y, shape.width, shape.height), shape.radius, shape.radius), this.paint);
+            canvas.drawRRect(this.canvasKit.RRectXY(this.canvasKit.LTRBRect(shape.x, shape.y, shape.width, shape.height), shape.radius, shape.radius), this.paint);
         }
     }
 

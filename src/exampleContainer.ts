@@ -37,6 +37,8 @@ g5.position.set(200, 200)
 const sprite = PIXI.Sprite.from('https://pixijs.com/assets/bunny.png')
 sprite.position.set(200, 200)
 sprite.scale.set(3)
+sprite.anchor.set(0.5, 0.5)
+sprite.angle = 20
 
 subContainer.pivot.set(-100, -100)
 subContainer.position.set(75, 50)

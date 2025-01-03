@@ -1,4 +1,4 @@
-import CanvasKitInit, { Canvas, CanvasKit, Surface } from 'canvaskit-wasm';
+import CanvasKitInit, { Canvas, CanvasKit, Surface } from '../third-party/canvaskit/canvaskit.js';
 import * as PIXI from 'pixi.js-legacy';
 import PixiSkiaAdapter from '../features/PixiSkiaAdapter';
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from '../constants';
@@ -45,10 +45,10 @@ export class PixiRenderer extends Renderer<PIXI.Application> {
 
 
 export class SkiaRenderer extends Renderer<CanvasKit> {
+    public skCanvas!: Canvas;
     private canvasKit!: CanvasKit;
     private pixiAdapter!: PixiSkiaAdapter;
     private surface!: Surface | null;
-    private skCanvas!: Canvas;
 
     public async init(): Promise<CanvasKit> {
         const canvasElement = document.createElement('canvas')
@@ -58,7 +58,7 @@ export class SkiaRenderer extends Renderer<CanvasKit> {
         canvasElement.id = 'skia-canvas'
         this.parentElement.appendChild(canvasElement)
 
-        this.canvasKit = await CanvasKitInit({locateFile: (file: string) => `https://unpkg.com/canvaskit-wasm@0.39.1/bin/${file}`})
+        this.canvasKit = await CanvasKitInit({locateFile: (file: string) => `/${file}`})
 
         this.surface = this.canvasKit.MakeSWCanvasSurface('skia-canvas');
         if (!this.surface) {
@@ -68,17 +68,54 @@ export class SkiaRenderer extends Renderer<CanvasKit> {
         this.skCanvas = this.surface.getCanvas();
         this.skCanvas.scale(pixelRatio, pixelRatio);
 
-        this.pixiAdapter = new PixiSkiaAdapter(this.skCanvas, this.canvasKit, this.surface);
+        this.pixiAdapter = new PixiSkiaAdapter(this.canvasKit);
         this.app = this.canvasKit;
         return this.canvasKit;
     }
 
     public renderContainer(container: PIXI.Container): void {
         this.clear();
-        this.pixiAdapter.renderContainer(container);
+        this.pixiAdapter.renderContainer(this.skCanvas, container);
+
+        const queue: Array<PIXI.DisplayObject> = [];
+        for (const child of container.children ?? []) {
+            queue.push(child);
+        }
+        while (queue.length > 0) {
+            const child = queue.shift()!;
+
+            if (child instanceof PIXI.Container) {
+                for (const grandChild of child.children ?? []) {
+                    queue.push(grandChild);
+                }
+            }
+        }
+        this.surface.flush();
     }
 
     public clear(): void {
         this.skCanvas.clear(this.canvasKit.WHITE);
+    }
+
+    public exportToPDF(container: PIXI.Container): void {
+        const stream = new this.canvasKit.SkWStream();
+        const pdfDoc = new this.canvasKit.SkPDFDocument(stream);
+
+        const canvas = pdfDoc.beginPage(CANVAS_WIDTH, CANVAS_HEIGHT);
+
+        this.pixiAdapter.renderContainer(canvas, container);
+
+        pdfDoc.endPage();
+        pdfDoc.close();
+
+        const buffer = stream.getBuffer();
+        const blob = new Blob([buffer], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'output.pdf';
+        a.click();
+        URL.revokeObjectURL(url);
     }
 }

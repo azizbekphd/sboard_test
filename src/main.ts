@@ -6,8 +6,8 @@ import { Application } from './core/Application'
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
     <div>
         <menu>
-            <button>Generate random container</button>
-            <button>Export as PDF</button>
+            <button id="generate-random-container">Generate random container</button>
+            <button id="export-as-pdf">Export as PDF</button>
         </menu>
         <div id="canvases">
             <div>
