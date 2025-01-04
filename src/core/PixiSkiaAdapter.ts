@@ -124,7 +124,9 @@ export default class PixiSkiaAdapter {
         } else if (shape instanceof PIXI.Rectangle) {
             canvas.drawRect(this.canvasKit.XYWHRect(shape.x, shape.y, shape.width, shape.height), this.paint);
         } else if (shape instanceof PIXI.RoundedRectangle) {
-            canvas.drawRRect(this.canvasKit.RRectXY(this.canvasKit.LTRBRect(shape.x, shape.y, shape.width, shape.height), shape.radius, shape.radius), this.paint);
+            canvas.drawRRect(this.canvasKit.RRectXY(
+                this.canvasKit.XYWHRect(shape.x, shape.y, shape.width, shape.height),
+                shape.radius, shape.radius), this.paint);
         }
     }
 

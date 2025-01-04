@@ -1,12 +1,12 @@
 import CanvasKitInit, { Canvas, CanvasKit, Surface } from '../third-party/canvaskit/canvaskit.js';
 import * as PIXI from 'pixi.js-legacy';
-import PixiSkiaAdapter from '../features/PixiSkiaAdapter';
+import PixiSkiaAdapter from './PixiSkiaAdapter';
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from '../constants';
 
 
 abstract class Renderer<T> {
+    public app!: T;
     protected parentElement: HTMLElement;
-    protected app!: T;
 
     constructor(parentElement: HTMLElement) {
         this.parentElement = parentElement;
@@ -14,7 +14,7 @@ abstract class Renderer<T> {
 
     public abstract init(): Promise<T>;
     public abstract renderContainer(container: PIXI.Container): void;
-    public abstract clear(): void;
+    public abstract clean(): void;
 }
 
 
@@ -29,16 +29,17 @@ export class PixiRenderer extends Renderer<PIXI.Application> {
             backgroundColor: 0xFFFFFF,
             resolution: pixelRatio,
         });
-        this.parentElement.appendChild(app.view);
+        this.parentElement.appendChild(app.view as HTMLCanvasElement);
         this.app = app;
         return app;
     }
 
     public renderContainer(container: PIXI.Container): void {
+        this.clean();
         this.app.stage.addChild(container);
     }
 
-    public clear(): void {
+    public clean(): void {
         this.app.stage.removeChildren();
     }
 }
@@ -74,7 +75,7 @@ export class SkiaRenderer extends Renderer<CanvasKit> {
     }
 
     public renderContainer(container: PIXI.Container): void {
-        this.clear();
+        this.clean();
         this.pixiAdapter.renderContainer(this.skCanvas, container);
 
         const queue: Array<PIXI.DisplayObject> = [];
@@ -90,22 +91,25 @@ export class SkiaRenderer extends Renderer<CanvasKit> {
                 }
             }
         }
-        this.surface.flush();
+        this.surface!.flush();
     }
 
-    public clear(): void {
+    public clean(): void {
         this.skCanvas.clear(this.canvasKit.WHITE);
     }
 
-    public exportToPDF(container: PIXI.Container): void {
+    public exportToPDF(containers: Array<PIXI.Container>): void {
         const stream = new this.canvasKit.SkWStream();
         const pdfDoc = new this.canvasKit.SkPDFDocument(stream);
 
-        const canvas = pdfDoc.beginPage(CANVAS_WIDTH, CANVAS_HEIGHT);
+        for (const container of containers) {
+            const canvas = pdfDoc.beginPage(CANVAS_WIDTH, CANVAS_HEIGHT);
 
-        this.pixiAdapter.renderContainer(canvas, container);
+            this.pixiAdapter.renderContainer(canvas, container);
 
-        pdfDoc.endPage();
+            pdfDoc.endPage();
+        }
+
         pdfDoc.close();
 
         const buffer = stream.getBuffer();

@@ -2,18 +2,27 @@ import * as PIXI from 'pixi.js-legacy';
 
 
 class ContainersManager {
-    private containers: Array<PIXI.Container> = [];
+    public selectedContainer: number = 0;
+    public containers: Array<PIXI.Container> = [];
 
     public addContainer(container: PIXI.Container): void {
         this.containers.push(container);
     }
 
-    public removeContainer(container: PIXI.Container): void {
-        this.containers.splice(this.containers.indexOf(container), 1);
+    public removeContainer(index: number): void {
+        this.containers.splice(index, 1);
     }
 
-    public getContainers(): Array<PIXI.Container> {
-        return this.containers;
+    public setSelectedContainer(index: number): void {
+        this.selectedContainer = index;
+    }
+
+    public getSelectedContainer(): PIXI.Container | null {
+        return this.containers[this.selectedContainer];
+    }
+
+    public setSelectedContainerToLast(): void {
+        this.selectedContainer = this.containers.length - 1;
     }
 }
 

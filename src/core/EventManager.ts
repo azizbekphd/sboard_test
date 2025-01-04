@@ -1,12 +1,20 @@
-import * as PIXI from 'pixi.js-legacy';
-import { PixiRenderer, SkiaRenderer } from './Renderer';
-import mainContainer from '../exampleContainer';
+import { Application } from './Application';
 
 
 export class EventManager {
-    public init(pixiRenderer: PixiRenderer, skiaRenderer: SkiaRenderer): void {
+    private app: Application;
+
+    constructor(app: Application) {
+        this.app = app;
+    }
+
+    public initButtonClickEvents(): void {
         document.querySelector("#export-as-pdf")!.addEventListener("click", () => {
-            skiaRenderer.exportToPDF(mainContainer);
+            this.app.skiaRenderer.exportToPDF(this.app.containersManager.containers);
+        });
+
+        document.querySelector("#generate-random-container")!.addEventListener("click", () => {
+            this.app.addRandomContainer();
         });
     }
 }

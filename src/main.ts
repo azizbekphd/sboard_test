@@ -1,5 +1,4 @@
 import './style.css'
-import mainContainer from './exampleContainer'
 import { Application } from './core/Application'
 
 
@@ -9,16 +8,30 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
             <button id="generate-random-container">Generate random container</button>
             <button id="export-as-pdf">Export as PDF</button>
         </menu>
-        <div id="canvases">
-            <div>
-                <h3>PixiJS</h3>
-                <div id="pixi-canvas-wrapper" class="canvas"></div>
+        <aside id="thumbnails">
+            <ul></ul>
+        </aside>
+        <main>
+            <div class="canvases">
+                <div class="main-canvases">
+                    <div>
+                        <h3>PixiJS</h3>
+                        <div id="pixi-canvas-wrapper" class="canvas"></div>
+                    </div>
+                    <div>
+                        <h3>Skia</h3>
+                        <div id="skia-canvas-wrapper" class="canvas"></div>
+                    </div>
+                </div>
+                <div class="comparison">
+                    <h3>Difference</h3>
+                    <div class="comparison-canvases">
+                        <canvas id="comparison-canvas1" class="canvas"></canvas>
+                        <canvas id="comparison-canvas2" class="canvas"></canvas>
+                    </div>
+                </div>
             </div>
-            <div>
-                <h3>Skia</h3>
-                <div id="skia-canvas-wrapper" class="canvas"></div>
-            </div>
-        </div>
+        </main>
     </div>
 `
 
@@ -27,5 +40,5 @@ const app = new Application({
     skia: document.getElementById('skia-canvas-wrapper')!,
 })
 app.init().then(() => {
-    app.renderContainer(mainContainer)
+    app.addRandomContainer();
 })
