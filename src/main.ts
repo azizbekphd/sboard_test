@@ -3,12 +3,13 @@ import { Application } from './core/Application'
 
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
+    <menu>
+        <button id="generate-random-container">Generate random container</button>
+        <button id="export-as-pdf">Export as PDF</button>
+    </menu>
     <div>
-        <menu>
-            <button id="generate-random-container">Generate random container</button>
-            <button id="export-as-pdf">Export as PDF</button>
-        </menu>
         <aside id="thumbnails">
+            <h3>Thumbnails</h3>
             <ul></ul>
         </aside>
         <main>

@@ -7,10 +7,10 @@ import { CANVAS_HEIGHT, CANVAS_WIDTH, MAX_CONTAINERS } from '../constants';
 import ThumbnailRenderer from '../utils/ThumbnailRenderer';
 
 export class Application {
-    public pixiRenderer: PixiRenderer;
-    public skiaRenderer: SkiaRenderer;
-    public containersManager: ContainersManager;
-    public containerGenerator: RandomPixiContainerGenerator;
+    private pixiRenderer: PixiRenderer;
+    private skiaRenderer: SkiaRenderer;
+    private containersManager: ContainersManager;
+    private containerGenerator: RandomPixiContainerGenerator;
     private eventManager: EventManager;
     private thumbnailRenderer: ThumbnailRenderer;
 
@@ -48,7 +48,7 @@ export class Application {
 
     public addContainer(container: PIXI.Container): void {
         this.containersManager.addContainer(container);
-        this.containersManager.setSelectedContainerToLast()
+        this.containersManager.setSelectedContainerToLast();
         this.clean();
         this.renderSelectedContainer();
         this.checkContainersLimit();
@@ -56,32 +56,31 @@ export class Application {
     }
 
     private checkContainersLimit(): void {
-        const generateButton = document.getElementById('generate-random-container')! as HTMLButtonElement;
-        if (this.containersManager.containers.length >= MAX_CONTAINERS) {
-            generateButton.disabled = true;
-            generateButton.classList.add('disabled');
-        } else {
-            generateButton.disabled = false;
-            generateButton.classList.remove('disabled');
-        }
+        const generateButton = document.getElementById('generate-random-container') as HTMLButtonElement;
+        const isLimitReached = this.containersManager.containers.length >= MAX_CONTAINERS;
+        generateButton.disabled = isLimitReached;
+        generateButton.classList.toggle('disabled', isLimitReached);
     }
 
     private renderSelectedContainer(): void {
-        this.pixiRenderer.renderContainer(this.containersManager.getSelectedContainer()!);
-        this.skiaRenderer.renderContainer(this.containersManager.getSelectedContainer()!);
-        this.renderComparisonContainers();
+        const selectedContainer = this.containersManager.getSelectedContainer();
+        if (selectedContainer) {
+            this.pixiRenderer.renderContainer(selectedContainer);
+            this.skiaRenderer.renderContainer(selectedContainer);
+            this.renderComparisonContainers();
+        }
     }
 
     private renderComparisonContainers(): void {
-        const pixiCanvas = document.querySelector('#pixi-canvas-wrapper canvas')! as HTMLCanvasElement;
-        const skiaCanvas = document.querySelector('#skia-canvas-wrapper canvas')! as HTMLCanvasElement;
-        const comparisonCanvas1 = document.getElementById('comparison-canvas1')! as HTMLCanvasElement;
-        const comparisonCanvas2 = document.getElementById('comparison-canvas2')! as HTMLCanvasElement;
+        const pixiCanvas = document.querySelector('#pixi-canvas-wrapper canvas') as HTMLCanvasElement;
+        const skiaCanvas = document.querySelector('#skia-canvas-wrapper canvas') as HTMLCanvasElement;
+        const comparisonCanvas1 = document.getElementById('comparison-canvas1') as HTMLCanvasElement;
+        const comparisonCanvas2 = document.getElementById('comparison-canvas2') as HTMLCanvasElement;
 
-        comparisonCanvas1.width = CANVAS_WIDTH;
-        comparisonCanvas1.height = CANVAS_HEIGHT;
-        comparisonCanvas2.width = CANVAS_WIDTH;
-        comparisonCanvas2.height = CANVAS_HEIGHT;
+        [comparisonCanvas1, comparisonCanvas2].forEach(canvas => {
+            canvas.width = CANVAS_WIDTH;
+            canvas.height = CANVAS_HEIGHT;
+        });
 
         setTimeout(() => {
             comparisonCanvas1.getContext('2d')!.drawImage(pixiCanvas, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
@@ -95,28 +94,25 @@ export class Application {
     }
 
     private refreshThumbnails(): void {
-        const thumbnails = document.querySelector('#thumbnails ul')!;
+        const thumbnails = document.querySelector('#thumbnails ul') as HTMLElement;
         const scrollTop = thumbnails.scrollTop;
 
         thumbnails.innerHTML = '';
-        for (let i = 0; i < this.containersManager.containers.length; i++) {
+        this.containersManager.containers.forEach((container, index) => {
             const li = document.createElement('li');
-
-            if (i === this.containersManager.selectedContainer) {
+            if (index === this.containersManager.selectedContainer) {
                 li.classList.add('selected');
             }
 
             const thumbnailCanvas = document.createElement('canvas');
-
             thumbnailCanvas.width = CANVAS_WIDTH;
             thumbnailCanvas.height = CANVAS_HEIGHT;
-            this.thumbnailRenderer.render(this.containersManager.containers[i], thumbnailCanvas);
-
+            this.thumbnailRenderer.render(container, thumbnailCanvas);
             li.appendChild(thumbnailCanvas);
             thumbnails.appendChild(li);
 
             li.addEventListener('click', () => {
-                this.containersManager.setSelectedContainer(i);
+                this.containersManager.setSelectedContainer(index);
                 this.renderSelectedContainer();
                 this.refreshThumbnails();
             });
@@ -125,22 +121,19 @@ export class Application {
             removeButton.innerHTML = 'x';
             removeButton.addEventListener('click', (e) => {
                 e.stopPropagation();
-                this.containersManager.removeContainer(i);
+                this.containersManager.removeContainer(index);
                 if (this.containersManager.containers.length === 0) {
                     this.addRandomContainer();
-                    return;
-                }
-                if (this.containersManager.selectedContainer === this.containersManager.containers.length) {
+                } else if (this.containersManager.selectedContainer === this.containersManager.containers.length) {
                     this.containersManager.setSelectedContainerToLast();
                 }
                 this.renderSelectedContainer();
                 this.refreshThumbnails();
             });
             li.appendChild(removeButton);
-
-            this.skiaRenderer
-        }
+        });
 
         thumbnails.scrollTop = scrollTop;
     }
 }
+
