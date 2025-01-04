@@ -4,9 +4,11 @@ type Texture = PIXI.Texture;
 
 export default class RandomPixiContainerGenerator {
     private textures: Texture[];
+    private eventCallbacks: Record<string, (name: string) => () => void>;
 
-    constructor(textures: Texture[]) {
+    constructor(textures: Texture[], eventCallbacks: Record<string, (name: string) => () => void>) {
         this.textures = textures;
+        this.eventCallbacks = eventCallbacks;
     }
 
     /**
@@ -30,20 +32,20 @@ export default class RandomPixiContainerGenerator {
         const childrenCount = Math.floor(Math.random() * maxChildren) + 5;
 
         for (let i = 0; i < childrenCount; i++) {
-            const childType = Math.floor(Math.random() * 3); // 0: Graphics, 1: Sprite, 2: Subcontainer
+            const childType = Math.floor(Math.random() * 5); // 0: Graphics, 1: Sprite, 2: Subcontainer
 
             switch (childType) {
                 case 0:
-                    container.addChild(this.createRandomGraphics());
-                    break;
-                case 1:
-                    container.addChild(this.createRandomSprite());
-                    break;
-                case 2:
                     const subContainer = new PIXI.Container();
                     this.applyRandomTransformations(subContainer);
                     this.populateContainer(subContainer, depth - 1, maxChildren);
                     container.addChild(subContainer);
+                    break;
+                case 1:
+                    container.addChild(this.createRandomSprite());
+                    break;
+                default:
+                    container.addChild(this.createRandomGraphics());
                     break;
             }
         }
@@ -64,7 +66,8 @@ export default class RandomPixiContainerGenerator {
                     Math.random() * 100,
                     Math.random() * 200,
                     Math.random() * 200
-                );
+                )
+                this.bindEventListeners(graphics, 'rectangle');
                 break;
             case 1: // Circle
                 graphics.drawCircle(
@@ -72,6 +75,7 @@ export default class RandomPixiContainerGenerator {
                     Math.random() * 200,
                     Math.random() * 100
                 );
+                this.bindEventListeners(graphics, 'circle');
                 break;
             case 2: // Polygon
                 graphics.drawPolygon([
@@ -79,6 +83,7 @@ export default class RandomPixiContainerGenerator {
                     Math.random() * 200, Math.random() * 200,
                     Math.random() * 200, Math.random() * 200
                 ]);
+                this.bindEventListeners(graphics, 'polygon');
                 break;
             case 3: // Ellipse
                 graphics.drawEllipse(
@@ -87,6 +92,7 @@ export default class RandomPixiContainerGenerator {
                     Math.random() * 100,
                     Math.random() * 50
                 );
+                this.bindEventListeners(graphics, 'ellipse');
                 break;
             case 4: // Arc
                 graphics.arc(
@@ -96,6 +102,7 @@ export default class RandomPixiContainerGenerator {
                     0,
                     Math.PI * Math.random() * 2
                 );
+                this.bindEventListeners(graphics, 'arc');
                 break;
         }
 
@@ -116,6 +123,7 @@ export default class RandomPixiContainerGenerator {
         sprite.position.set(Math.random() * 400, Math.random() * 400);
         sprite.rotation = Math.random() * Math.PI * 2;
         sprite.scale.set(Math.random() * 2, Math.random() * 2);
+        this.bindEventListeners(sprite, 'sprite');
         return sprite;
     }
 
@@ -133,5 +141,14 @@ export default class RandomPixiContainerGenerator {
      */
     private getRandomColor(): number {
         return Math.floor(Math.random() * 0xFFFFFF);
+    }
+
+    /**
+     * Bind event listeners to the generated display object.
+     */
+    private bindEventListeners(obj: PIXI.DisplayObject, objectName: string): void {
+        Object.keys(this.eventCallbacks).forEach(eventName => {
+            obj.on(eventName, this.eventCallbacks[eventName](objectName));
+        });
     }
 }

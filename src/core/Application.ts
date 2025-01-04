@@ -5,11 +5,12 @@ import ContainersManager from './ContainersManager';
 import RandomPixiContainerGenerator from '../utils/RandomPixiContainerGenerator';
 import { CANVAS_HEIGHT, CANVAS_WIDTH, MAX_CONTAINERS } from '../constants';
 import ThumbnailRenderer from '../utils/ThumbnailRenderer';
+import showSnackbar from '../utils/showSnackbar';
 
 export class Application {
-    private pixiRenderer: PixiRenderer;
-    private skiaRenderer: SkiaRenderer;
-    private containersManager: ContainersManager;
+    public pixiRenderer: PixiRenderer;
+    public skiaRenderer: SkiaRenderer;
+    public containersManager: ContainersManager;
     private containerGenerator: RandomPixiContainerGenerator;
     private eventManager: EventManager;
     private thumbnailRenderer: ThumbnailRenderer;
@@ -22,7 +23,15 @@ export class Application {
             [
                 PIXI.Texture.from('/sprites/sprite1.png'),
                 PIXI.Texture.from('/sprites/sprite2.png'),
-            ]
+            ],
+            {
+                pointerdown: (name: string) => () => {
+                    showSnackbar(`<b>pointerdown</b>: ${String(name).charAt(0).toUpperCase() + String(name).slice(1)}`);
+                },
+                pointerup: (name: string) => () => {
+                    showSnackbar(`<b>pointerup</b>: ${String(name).charAt(0).toUpperCase() + String(name).slice(1)}`);
+                },
+            }
         );
         this.eventManager = new EventManager(this);
         this.thumbnailRenderer = new ThumbnailRenderer();
@@ -118,7 +127,7 @@ export class Application {
             });
 
             const removeButton = document.createElement('button');
-            removeButton.innerHTML = 'x';
+            removeButton.innerHTML = '<span class="close"></span>';
             removeButton.addEventListener('click', (e) => {
                 e.stopPropagation();
                 this.containersManager.removeContainer(index);

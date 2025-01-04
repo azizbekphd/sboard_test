@@ -34,6 +34,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
             </div>
         </main>
     </div>
+    <div id="snackbars"></div>
 `
 
 const app = new Application({
