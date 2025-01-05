@@ -65,7 +65,7 @@ export default class PixiSkiaAdapter {
         }
 
         const baseTexture = sprite.texture.baseTexture;
-        const source = baseTexture.resource?.source as HTMLImageElement | HTMLCanvasElement;
+        const source = baseTexture.getDrawableSource!() as HTMLImageElement | HTMLCanvasElement;
 
         if (!source) {
             console.warn('Sprite source is not available for rendering.');
