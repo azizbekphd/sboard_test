@@ -71,7 +71,7 @@ export class Application {
         this.clean();
         this.renderSelectedContainer();
         this.checkContainersLimit();
-        this.refreshThumbnails();
+        this.refreshThumbnails(true);
     }
 
     /**
@@ -126,9 +126,8 @@ export class Application {
     /**
      * Refreshes the thumbnails.
      */
-    private refreshThumbnails(): void {
+    private refreshThumbnails(scrollToBottom: boolean = false): void {
         const thumbnails = document.querySelector('#thumbnails ol') as HTMLElement;
-        const scrollTop = thumbnails.scrollTop;
 
         thumbnails.innerHTML = '';
         this.containersManager.containers.forEach((container, index) => {
@@ -154,6 +153,7 @@ export class Application {
             removeButton.innerHTML = '<span class="close"></span>';
             removeButton.addEventListener('click', (e) => {
                 e.stopPropagation();
+                const scrollTop = thumbnails.scrollTop;
                 this.containersManager.removeContainer(index);
                 if (this.containersManager.containers.length === 0) {
                     this.addRandomContainer();
@@ -163,11 +163,13 @@ export class Application {
                 this.renderSelectedContainer();
                 this.refreshThumbnails();
                 this.checkContainersLimit();
+                thumbnails.scrollTop = scrollTop;
             });
             li.appendChild(removeButton);
         });
-
-        thumbnails.scrollTop = scrollTop;
+        if (scrollToBottom) {
+            thumbnails.scrollTop = thumbnails.scrollHeight;
+        }
     }
 }
 
