@@ -21,8 +21,8 @@ export class Application {
         this.containersManager = new ContainersManager();
         this.containerGenerator = new RandomPixiContainerGenerator(
             [
-                PIXI.Texture.from('/sprites/sprite1.png'),
-                PIXI.Texture.from('/sprites/sprite2.png'),
+                PIXI.Texture.from('./sprites/sprite1.png'),
+                PIXI.Texture.from('./sprites/sprite2.png'),
             ],
             {
                 pointerdown: (name: string) => () => {

@@ -188,8 +188,8 @@ button:has(.close) {
 .close {
     display: block;
     background: white;
-    -webkit-mask: url('/icons/close.svg') no-repeat center;
-    mask: url('/icons/close.svg') no-repeat center;
+    -webkit-mask: url('/sboard_test/icons/close.svg') no-repeat center;
+    mask: url('/sboard_test/icons/close.svg') no-repeat center;
     width: 10px;
     height: 10px;
     border: none;

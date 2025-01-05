@@ -84,7 +84,7 @@ export class SkiaRenderer extends Renderer<CanvasKit> {
         canvasElement.id = 'skia-canvas'
         this.parentElement.appendChild(canvasElement)
 
-        this.app = await CanvasKitInit({locateFile: (file: string) => `/${file}`})
+        this.app = await CanvasKitInit({locateFile: (file: string) => `./${file}`})
 
         this.surface = this.app.MakeSWCanvasSurface('skia-canvas');
         if (!this.surface) {
