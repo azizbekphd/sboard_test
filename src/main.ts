@@ -10,7 +10,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
     <div>
         <aside id="thumbnails">
             <h3>Thumbnails</h3>
-            <ul></ul>
+            <ol></ol>
         </aside>
         <main>
             <div class="canvases">

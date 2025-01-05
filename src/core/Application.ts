@@ -127,7 +127,7 @@ export class Application {
      * Refreshes the thumbnails.
      */
     private refreshThumbnails(): void {
-        const thumbnails = document.querySelector('#thumbnails ul') as HTMLElement;
+        const thumbnails = document.querySelector('#thumbnails ol') as HTMLElement;
         const scrollTop = thumbnails.scrollTop;
 
         thumbnails.innerHTML = '';

@@ -118,10 +118,11 @@ main {
     float: left;
 }
 
-#thumbnails ul {
-    list-style: none;
+#thumbnails ol {
     margin: 0;
     padding: 0;
+    height: calc(100vh - 8rem - 70px);
+    overflow-y: auto;
 }
 
 #thumbnails li {
