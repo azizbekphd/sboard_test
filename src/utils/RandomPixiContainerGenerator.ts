@@ -32,7 +32,7 @@ export default class RandomPixiContainerGenerator {
         const childrenCount = Math.floor(Math.random() * maxChildren) + 5;
 
         for (let i = 0; i < childrenCount; i++) {
-            const childType = Math.floor(Math.random() * 5); // 0: Graphics, 1: Sprite, 2: Subcontainer
+            const childType = Math.floor(Math.random() * 7); // 0: Graphics, 1: Sprite, 2: Subcontainer
 
             switch (childType) {
                 case 0:
@@ -120,9 +120,7 @@ export default class RandomPixiContainerGenerator {
         ];
         const sprite = new PIXI.Sprite(randomTexture);
         sprite.anchor.set(0.5);
-        sprite.position.set(Math.random() * 400, Math.random() * 400);
-        sprite.rotation = Math.random() * Math.PI * 2;
-        sprite.scale.set(Math.random() * 2, Math.random() * 2);
+        this.applyRandomTransformations(sprite);
         this.bindEventListeners(sprite, 'sprite');
         return sprite;
     }
@@ -133,6 +131,7 @@ export default class RandomPixiContainerGenerator {
     private applyRandomTransformations(obj: PIXI.DisplayObject) {
         obj.position.set(Math.random() * 400, Math.random() * 400);
         obj.rotation = Math.random() * Math.PI * 2;
+        obj.scale.set(Math.random() * 2, Math.random() * 2);
         (obj as PIXI.Container | PIXI.Sprite).scale?.set(Math.random() * 2 + 0.5);
     }
 

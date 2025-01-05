@@ -15,5 +15,5 @@ export default function showSnackbar(message: string) {
         if (snackbar) {
             snackbar.remove();
         }
-    }, 3000);
+    }, 2000);
 }

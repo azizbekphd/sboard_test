@@ -25,7 +25,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
                     </div>
                 </div>
                 <div class="comparison">
-                    <h3>Difference</h3>
+                    <h3>Difference highlight</h3>
                     <div class="comparison-canvases">
                         <canvas id="comparison-canvas1" class="canvas"></canvas>
                         <canvas id="comparison-canvas2" class="canvas"></canvas>

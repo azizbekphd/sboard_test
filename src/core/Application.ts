@@ -37,6 +37,9 @@ export class Application {
         this.thumbnailRenderer = new ThumbnailRenderer();
     }
 
+    /**
+     * Initializes the application.
+     */
     public async init(): Promise<void> {
         try {
             await Promise.all([
@@ -44,17 +47,24 @@ export class Application {
                 this.skiaRenderer.init(),
             ]);
             this.eventManager.initButtonClickEvents();
+            this.eventManager.initSkiaPointerEvents();
         } catch (error) {
             console.error('Failed to initialize application:', error);
             throw error;
         }
     }
 
+    /**
+     * Adds a random container to the application.
+     */
     public addRandomContainer(): void {
         const container = this.containerGenerator.generateContainer();
         this.addContainer(container);
     }
 
+    /**
+     * Adds a container to the application.
+     */
     public addContainer(container: PIXI.Container): void {
         this.containersManager.addContainer(container);
         this.containersManager.setSelectedContainerToLast();
@@ -64,6 +74,9 @@ export class Application {
         this.refreshThumbnails();
     }
 
+    /**
+     * Checks if the number of containers exceeds the maximum limit.
+     */
     private checkContainersLimit(): void {
         const generateButton = document.getElementById('generate-random-container') as HTMLButtonElement;
         const isLimitReached = this.containersManager.containers.length >= MAX_CONTAINERS;
@@ -71,17 +84,24 @@ export class Application {
         generateButton.classList.toggle('disabled', isLimitReached);
     }
 
+    /**
+     * Renders the selected container.
+     */
     private renderSelectedContainer(): void {
         const selectedContainer = this.containersManager.getSelectedContainer();
         if (selectedContainer) {
             this.pixiRenderer.renderContainer(selectedContainer);
             this.skiaRenderer.renderContainer(selectedContainer);
             this.renderComparisonContainers();
+
+            this.eventManager.refresh();
         }
     }
 
+    /**
+     * Renders the comparison containers.
+     */
     private renderComparisonContainers(): void {
-        const pixiCanvas = document.querySelector('#pixi-canvas-wrapper canvas') as HTMLCanvasElement;
         const skiaCanvas = document.querySelector('#skia-canvas-wrapper canvas') as HTMLCanvasElement;
         const comparisonCanvas1 = document.getElementById('comparison-canvas1') as HTMLCanvasElement;
         const comparisonCanvas2 = document.getElementById('comparison-canvas2') as HTMLCanvasElement;
@@ -91,17 +111,21 @@ export class Application {
             canvas.height = CANVAS_HEIGHT;
         });
 
-        setTimeout(() => {
-            comparisonCanvas1.getContext('2d')!.drawImage(pixiCanvas, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-            comparisonCanvas2.getContext('2d')!.drawImage(skiaCanvas, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-        }, 0);
+        this.thumbnailRenderer.render(this.containersManager.getSelectedContainer()!, comparisonCanvas1);
+        comparisonCanvas2.getContext('2d')!.drawImage(skiaCanvas, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     }
 
+    /**
+     * Cleans the renderers.
+     */
     private clean(): void {
         this.pixiRenderer.clean();
         this.skiaRenderer.clean();
     }
 
+    /**
+     * Refreshes the thumbnails.
+     */
     private refreshThumbnails(): void {
         const thumbnails = document.querySelector('#thumbnails ul') as HTMLElement;
         const scrollTop = thumbnails.scrollTop;
@@ -138,6 +162,7 @@ export class Application {
                 }
                 this.renderSelectedContainer();
                 this.refreshThumbnails();
+                this.checkContainersLimit();
             });
             li.appendChild(removeButton);
         });

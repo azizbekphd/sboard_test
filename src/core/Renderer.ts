@@ -1,33 +1,51 @@
 import CanvasKitInit, { Canvas, CanvasKit, Surface } from '../third-party/canvaskit/canvaskit.js';
 import * as PIXI from 'pixi.js-legacy';
 import PixiSkiaAdapter from './PixiSkiaAdapter';
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from '../constants';
+import { CANVAS_HEIGHT, CANVAS_WIDTH, PIXEL_RATIO } from '../constants';
 
 
 abstract class Renderer<T> {
+    /**
+     * Core element of the renderer (PIXI.Application or CanvasKit).
+     */
     public app!: T;
+    /**
+     * Parent element to append the canvas to.
+     */
     protected parentElement: HTMLElement;
 
     constructor(parentElement: HTMLElement) {
         this.parentElement = parentElement;
     }
 
+    /**
+     * Initializes the renderer.
+     */
     public abstract init(): Promise<T>;
+
+    /**
+     * Renders a container to the renderer.
+     * @param container - The container to render.
+     */
     public abstract renderContainer(container: PIXI.Container): void;
+
+    /**
+     * Cleans the renderer.
+     */
     public abstract clean(): void;
 }
 
 
 export class PixiRenderer extends Renderer<PIXI.Application> {
     public async init(): Promise<PIXI.Application> {
-        const pixelRatio = window.devicePixelRatio || 1
         const app = new PIXI.Application({
             width: CANVAS_WIDTH,
             height: CANVAS_HEIGHT,
             eventMode: 'dynamic',
             forceCanvas: true,
             backgroundColor: 0xFFFFFF,
-            resolution: pixelRatio,
+            resolution: PIXEL_RATIO,
+            powerPreference: 'high-performance',
         });
         this.parentElement.appendChild(app.view as HTMLCanvasElement);
         this.app = app;
@@ -47,31 +65,29 @@ export class PixiRenderer extends Renderer<PIXI.Application> {
 
 export class SkiaRenderer extends Renderer<CanvasKit> {
     public skCanvas!: Canvas;
-    private canvasKit!: CanvasKit;
     private pixiAdapter!: PixiSkiaAdapter;
     private surface!: Surface | null;
 
     public async init(): Promise<CanvasKit> {
         const canvasElement = document.createElement('canvas')
-        const pixelRatio = window.devicePixelRatio || 1
-        canvasElement.width = CANVAS_WIDTH * pixelRatio
-        canvasElement.height = CANVAS_HEIGHT * pixelRatio
+        canvasElement.width = CANVAS_WIDTH * PIXEL_RATIO
+        canvasElement.height = CANVAS_HEIGHT * PIXEL_RATIO
         canvasElement.id = 'skia-canvas'
         this.parentElement.appendChild(canvasElement)
 
-        this.canvasKit = await CanvasKitInit({locateFile: (file: string) => `/${file}`})
+        this.app = await CanvasKitInit({locateFile: (file: string) => `/${file}`})
 
-        this.surface = this.canvasKit.MakeSWCanvasSurface('skia-canvas');
+        this.surface = this.app.MakeSWCanvasSurface('skia-canvas');
         if (!this.surface) {
           throw new Error('Could not create surface');
         }
 
         this.skCanvas = this.surface.getCanvas();
-        this.skCanvas.scale(pixelRatio, pixelRatio);
+        this.skCanvas.scale(PIXEL_RATIO, PIXEL_RATIO);
 
-        this.pixiAdapter = new PixiSkiaAdapter(this.canvasKit);
-        this.app = this.canvasKit;
-        return this.canvasKit;
+        this.pixiAdapter = new PixiSkiaAdapter(this.app);
+        this.app = this.app;
+        return this.app;
     }
 
     public renderContainer(container: PIXI.Container): void {
@@ -95,12 +111,12 @@ export class SkiaRenderer extends Renderer<CanvasKit> {
     }
 
     public clean(): void {
-        this.skCanvas.clear(this.canvasKit.WHITE);
+        this.skCanvas.clear(this.app.WHITE);
     }
 
     public exportToPDF(containers: Array<PIXI.Container>): void {
-        const stream = new this.canvasKit.SkWStream();
-        const pdfDoc = new this.canvasKit.SkPDFDocument(stream);
+        const stream = new this.app.SkWStream();
+        const pdfDoc = new this.app.SkPDFDocument(stream);
 
         for (const container of containers) {
             const canvas = pdfDoc.beginPage(CANVAS_WIDTH, CANVAS_HEIGHT);
