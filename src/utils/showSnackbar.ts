@@ -1,3 +1,7 @@
+/**
+ * Shows a snackbar with a message.
+ * @param message - The message to show.
+ */
 export default function showSnackbar(message: string) {
     const snackbarsContainer = document.querySelector('#snackbars')!;
 

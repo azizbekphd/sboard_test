@@ -4,6 +4,9 @@ import PixiSkiaAdapter from './PixiSkiaAdapter';
 import { CANVAS_HEIGHT, CANVAS_WIDTH, PIXEL_RATIO } from '../constants';
 
 
+/**
+ * Abstract class for renderers.
+ */
 abstract class Renderer<T> {
     /**
      * Core element of the renderer (PIXI.Application or CanvasKit).
@@ -36,6 +39,9 @@ abstract class Renderer<T> {
 }
 
 
+/**
+ * Renderer for PIXI.Application.
+ */
 export class PixiRenderer extends Renderer<PIXI.Application> {
     public async init(): Promise<PIXI.Application> {
         const app = new PIXI.Application({
@@ -63,6 +69,9 @@ export class PixiRenderer extends Renderer<PIXI.Application> {
 }
 
 
+/**
+ * Renderer for CanvasKit.
+ */
 export class SkiaRenderer extends Renderer<CanvasKit> {
     public skCanvas!: Canvas;
     private pixiAdapter!: PixiSkiaAdapter;
@@ -114,6 +123,10 @@ export class SkiaRenderer extends Renderer<CanvasKit> {
         this.skCanvas.clear(this.app.WHITE);
     }
 
+    /**
+     * Exports the renderer to a PDF file.
+     * @param containers - The containers to export.
+     */
     public exportToPDF(containers: Array<PIXI.Container>): void {
         const stream = new this.app.SkWStream();
         const pdfDoc = new this.app.SkPDFDocument(stream);

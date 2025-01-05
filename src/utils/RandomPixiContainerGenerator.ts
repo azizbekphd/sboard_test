@@ -2,6 +2,9 @@ import * as PIXI from 'pixi.js-legacy';
 
 type Texture = PIXI.Texture;
 
+/**
+ * Generates random PIXI.Containers.
+ */
 export default class RandomPixiContainerGenerator {
     private textures: Texture[];
     private eventCallbacks: Record<string, (name: string) => () => void>;
@@ -56,8 +59,13 @@ export default class RandomPixiContainerGenerator {
      */
     private createRandomGraphics(): PIXI.Graphics {
         const graphics = new PIXI.Graphics();
+        graphics.lineStyle({
+            width: Math.random() * 10,
+            color: this.getRandomColor(),
+            join: PIXI.LINE_JOIN.ROUND,
+        });
         graphics.beginFill(this.getRandomColor());
-        const shapeType = Math.floor(Math.random() * 5); // 0: Rectangle, 1: Circle, 2: Polygon, 3: Ellipse
+        const shapeType = Math.floor(Math.random() * 6); // 0: Rectangle, 1: Circle, 2: Polygon, 3: Ellipse, 4: Arc, 5: Line
 
         switch (shapeType) {
             case 0: // Rectangle
@@ -78,11 +86,10 @@ export default class RandomPixiContainerGenerator {
                 this.bindEventListeners(graphics, 'circle');
                 break;
             case 2: // Polygon
-                graphics.drawPolygon([
-                    Math.random() * 200, Math.random() * 200,
-                    Math.random() * 200, Math.random() * 200,
-                    Math.random() * 200, Math.random() * 200
-                ]);
+                const points = 3
+                graphics.drawPolygon(Array.from({ length: points * 2 }, () => {
+                    return Math.random() * 200
+                })).closePath();
                 this.bindEventListeners(graphics, 'polygon');
                 break;
             case 3: // Ellipse
@@ -103,6 +110,11 @@ export default class RandomPixiContainerGenerator {
                     Math.PI * Math.random() * 2
                 );
                 this.bindEventListeners(graphics, 'arc');
+                break;
+            case 5: // Line via moveTo and lineTo
+                graphics.moveTo(Math.random() * 200, Math.random() * 200);
+                graphics.lineTo(Math.random() * 200, Math.random() * 200);
+                this.bindEventListeners(graphics, 'line');
                 break;
         }
 

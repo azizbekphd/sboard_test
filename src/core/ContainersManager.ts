@@ -1,6 +1,9 @@
 import * as PIXI from 'pixi.js-legacy';
 
 
+/**
+ * Manages the containers.
+ */
 class ContainersManager {
     public selectedContainer: number = 0;
     public containers: Array<PIXI.Container> = [];

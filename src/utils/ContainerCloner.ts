@@ -1,7 +1,15 @@
 import * as PIXI from 'pixi.js-legacy';
 
 
+/**
+ * Clones a PIXI.Container to use in another PIXI.Application instance.
+ */
 export default class ContainerCloner {
+    /**
+     * Clones a PIXI.Container.
+     * @param container - The container to clone.
+     * @returns A cloned container.
+     */
     static cloneContainer(container: PIXI.Container): PIXI.Container {
         if (container instanceof PIXI.Sprite) {
             const clone = new PIXI.Sprite(container.texture);
@@ -25,6 +33,12 @@ export default class ContainerCloner {
         return container;
     }
 
+    /**
+     * Copies listeners from one container to another.
+     * @param container - The source container.
+     * @param clonedContainer - The destination container.
+     * @param eventsToClone - The events to copy.
+     */
     static copyListeners(container: PIXI.Container, clonedContainer: PIXI.Container, eventsToClone: string[] = ['pointerdown', 'pointerup']): void {
         for (const event of eventsToClone) {
             if (container.listeners(event)) {
@@ -35,6 +49,11 @@ export default class ContainerCloner {
         }
     }
 
+    /**
+     * Copies the transform from one container to another.
+     * @param container - The source container.
+     * @param clonedContainer - The destination container.
+     */
     static copyTransform(container: PIXI.Container, clonedContainer: PIXI.Container): void {
         clonedContainer.scale.set(container.scale.x, container.scale.y);
         clonedContainer.pivot.set(container.pivot.x, container.pivot.y);

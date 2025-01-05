@@ -5,7 +5,13 @@ import ContainerCloner from '../utils/ContainerCloner';
 
 
 export class EventManager {
-    public shadowPixiApp: PIXI.Application;
+    /**
+     * Shadow PIXI.Application for Skia canvas event handling.
+     */
+    private shadowPixiApp: PIXI.Application;
+    /**
+     * Application instance.
+     */
     private app: Application;
 
     constructor(app: Application) {
@@ -18,6 +24,9 @@ export class EventManager {
         });
     }
 
+    /**
+     * Initializes menu button click events.
+     */
     public initButtonClickEvents(): void {
         document.querySelector("#export-as-pdf")!.addEventListener("click", () => {
             this.app.skiaRenderer.exportToPDF(this.app.containersManager.containers);
@@ -28,12 +37,18 @@ export class EventManager {
         });
     }
 
+    /**
+     * Initializes Skia canvas pointer events.
+     */
     public initSkiaPointerEvents(): void {
         const skiaCanvas = document.querySelector('#skia-canvas-wrapper canvas')! as HTMLCanvasElement;
 
         this.shadowPixiApp.renderer.events.setTargetElement(skiaCanvas);
     }
 
+    /**
+     * Refreshes the shadow PIXI.Application for a selected container.
+     */
     public refresh(): void {
         this.shadowPixiApp.stage.removeChildren();
         this.shadowPixiApp.stage.addChild(ContainerCloner.cloneContainer(

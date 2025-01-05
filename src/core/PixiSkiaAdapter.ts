@@ -9,6 +9,9 @@ interface TransformOptions {
     pivot: PIXI.Point;
 }
 
+/**
+ * Adapter for rendering PIXI.DisplayObjects to Canvas using Skia.
+ */
 export default class PixiSkiaAdapter {
     private canvasKit: CanvasKit;
     private paint: Paint;
@@ -16,8 +19,14 @@ export default class PixiSkiaAdapter {
     constructor(canvasKit: CanvasKit) {
         this.canvasKit = canvasKit;
         this.paint = new this.canvasKit.Paint();
+        this.paint.setStrokeJoin(this.canvasKit.StrokeJoin.Round);
     }
 
+    /**
+     * Renders a PIXI.DisplayObject to a Canvas using Skia.
+     * @param canvas - The canvas to render to.
+     * @param object - The PIXI.DisplayObject to render.
+     */
     public renderContainer(canvas: Canvas, object: PIXI.DisplayObject): void {
         const transform: TransformOptions = {
             translate: object.position,
@@ -45,6 +54,11 @@ export default class PixiSkiaAdapter {
         canvas.restore();
     }
 
+    /**
+     * Renders a PIXI.Sprite to a Canvas using Skia.
+     * @param canvas - The canvas to render to.
+     * @param sprite - The PIXI.Sprite to render.
+     */
     public renderSprite(canvas: Canvas, sprite: PIXI.Sprite): void {
         if (!sprite.texture.valid) {
             return;
@@ -89,6 +103,11 @@ export default class PixiSkiaAdapter {
         skImage.delete();
     }
 
+    /**
+     * Renders a PIXI.Graphics to a Canvas using Skia.
+     * @param canvas - The canvas to render to.
+     * @param graphics - The PIXI.Graphics to render.
+     */
     public renderGraphics(canvas: Canvas, graphics: PIXI.Graphics): void {
         const commands = graphics.geometry.graphicsData;
         for (const command of commands) {
@@ -107,6 +126,11 @@ export default class PixiSkiaAdapter {
         }
     }
 
+    /**
+     * Renders a shape to a Canvas using Skia.
+     * @param canvas - The canvas to render to.
+     * @param command - The shape to render.
+     */
     private _renderShape(canvas: Canvas, command: PIXI.GraphicsData): void {
         const shape = command.shape;
         if (shape instanceof PIXI.Circle) {
@@ -130,6 +154,12 @@ export default class PixiSkiaAdapter {
         }
     }
 
+    /**
+     * Converts a color from a PIXI.GraphicsData to a CanvasKit.Color.
+     * @param alpha - The alpha value of the color.
+     * @param color - The color value.
+     * @returns A CanvasKit.Color.
+     */
     public convertColor(alpha: number, color: number): Color {
         return this.canvasKit.Color(color >> 16, color >> 8 & 0xFF, color & 0xFF, alpha);
     }
