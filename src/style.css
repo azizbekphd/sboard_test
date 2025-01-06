@@ -82,6 +82,9 @@ button:active {
     button {
         background-color: #f9f9f9;
     }
+    .close {
+        background: black!important;
+    }
 }
 
 .main-canvases {
